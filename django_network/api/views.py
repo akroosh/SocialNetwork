@@ -1,4 +1,6 @@
 from rest_framework.response import Response
+from typing import Dict, Any, List
+import rest_framework
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework import permissions
@@ -27,7 +29,7 @@ class PostCreateApi(CreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer) -> None:
         serializer.save(author=self.request.user)
 
 
@@ -38,30 +40,34 @@ class PostGetDeleteUpdateApi(RetrieveUpdateDestroyAPIView):
 
 
 class UpVoteApi(APIView):
-    def post(self, request, postId):
-        post = Post.objects.get(id=postId)
+    def post(self, request: rest_framework.request.Request, postId: int) -> rest_framework.response.Response:
+        post = Post.objects.filter(id=postId).first()
+        if post is None:
+            return Response(status=404)
         user = request.user
-        vote = Vote.objects.filter(user=user, post=post).all()
-        if not vote:
+        vote = Vote.objects.filter(user=user, post=post).first()
+        if vote is None:
             vote = Vote(user=user, post=post)
             vote.save()
-        return Response(status=200)
+            return Response(status=201)
+        return Response("You have liked this post already.")
 
 
 class UnVoteApi(APIView):
-    def post(self, request, postId):
-        post = Post.objects.get(id=postId)
+    def post(self, request: rest_framework.request.Request, postId: int) -> rest_framework.response.Response:
+        post = Post.objects.filter(id=postId).first()
+        if post is None:
+            return Response(status=404)
         user = request.user
-        try:
-            vote = Vote.objects.get(user=user, post=post)
+        vote = Vote.objects.filter(user=user, post=post).first()
+        if vote is not None:
             vote.delete()
-        except Vote.DoesNotExist as e:
-            print('u need to like it before', e)
-        return Response(status=200)
+            return Response(status=201)
+        return Response("You haven`t liked this post yet.")
 
 
 class Analytics(APIView):
-    def get(self, request, *args, **kwargs):
+    def get(self, request: rest_framework.request.Request) -> rest_framework.response.Response:
         date_from = self.request.query_params.get('date_from')
         date_to = self.request.query_params.get('date_to')
         votes = Vote.objects.filter(upvote_day__lte=date_to, upvote_day__gte=date_from)
@@ -69,11 +75,9 @@ class Analytics(APIView):
 
 
 class Seen(APIView):
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes: List = [permissions.IsAdminUser]
 
-    def get(self, *args):
-        users_list = list(User.objects.all())
-        last_seen = []
-        for user in users_list:
-            last_seen.append(user.last_login)
+    def get(self) -> rest_framework.response.Response:
+        users_list: List = list(User.objects.all())
+        last_seen: List = [user.last_login for user in users_list]
         return Response(last_seen)
