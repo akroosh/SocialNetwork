@@ -49,6 +49,7 @@ class UpVoteApi(APIView):
         if vote is None:
             vote = Vote(user=user, post=post)
             vote.save()
+            print(user.last_activity)
             return Response(status=201)
         return Response("You have liked this post already.")
 

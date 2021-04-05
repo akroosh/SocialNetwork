@@ -1,7 +1,9 @@
 from django.db import models
-import datetime
 from django.contrib.auth.models import User
 
+
+class User(models.Model):
+    pass
 
 class Post(models.Model):
     title = models.CharField(max_length=255)
@@ -44,4 +46,4 @@ class Vote(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
-    upvote_day = models.DateField(default=datetime.date.today)
+    upvote_day = models.DateField(auto_now_add=True)
