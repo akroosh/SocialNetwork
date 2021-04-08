@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from typing import Dict, Any, List
+from typing import List
 import rest_framework
 from rest_framework.views import APIView
 from django.contrib.auth.models import User

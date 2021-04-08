@@ -18,10 +18,6 @@ Simple REST API with implemented token authentication
  </ol>
 
 <h3>Set up database</h3>
-<ol>
-<li>Open django_network/settings.</li>
-<li>Find DATABASES and change configuration credentials.</li>
-</ol>
 
 <h3>Start app</h3>
 <ol>
